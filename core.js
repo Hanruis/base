@@ -92,6 +92,7 @@ SMF.core.Modal = function(options){
 
   var Modal = SMF.core.Modal;
   Modal.prototype.setCenter = function(){
+    var sets = this.settings
     var $box = this.panel;
     var width = $box.width();
     var height = $box.height();
@@ -107,6 +108,7 @@ SMF.core.Modal = function(options){
     this.panel.hide();
   };
   Modal.prototype.open = function(msg){
+    var sets = this.settings;
     this.overlayer.show();
     this.panel.show();
     this.setCenter();  // 优化？
@@ -255,4 +257,55 @@ FCM.core.listPanel = function(options){
   });
 
   return listPanel;
+};
+
+/**
+ * FCM.core.customModal : 自定义弹窗
+ * 弹窗的主要内容，写在 html 页面内。
+ * 支持弹窗动画，需要 css3 支持
+ */
+FCM.core.customModal = function(opts){
+  var defaults = {
+    title:'',
+    klass:'',
+    content:''
+  };
+
+  var sets = $.extend(true, {}, defaults, opts);
+  var customModal = new FCM.core.modal({
+    hd:sets.title,
+    klass: sets.klass
+  });
+  customModal.customContent = $('.'+sets.content);
+  customModal.hasInit = false;
+  // 初始化，将内容都放到弹窗里面
+  customModal.init = function(){
+    customModal.setContent(customModal.customContent);
+    customModal.customContent.show();
+    customModal.hasInit = true;
+  };
+
+  customModal.openWithAnimation = function(In){
+    customModal.open();
+    // customModal.overlayer.addClass('animated fadeIn');
+    customModal.panel.addClass('animated '+ In);
+    customModal.panel.on('webkitAnimationEnd',function(event){
+      // customModal.overlayer.removeClass('animated fadeIn');
+      customModal.panel.removeClass('animated '+In);
+      customModal.panel.off('webkitAnimationEnd');
+    });
+  };
+
+  customModal.closeWithAnimation = function(Out){
+    // customModal.overlayer.addClass('animated fadeOut');
+    customModal.panel.addClass('animated '+ Out);
+    customModal.panel.on('webkitAnimationEnd', function(event){
+      // customModal.overlayer.removeClass('animated fadeOut');
+      customModal.panel.removeClass('animated '+ Out);
+      customModal.close();
+      customModal.panel.off('webkitAnimationEnd');
+    });
+  };
+
+  return customModal;
 };
