@@ -11,6 +11,7 @@ if( typeof SMF == 'undefined' || !SMF ){
  * 暂时仅对SMF “一级”属性进行检查。即SMF.namespace('prop') 是可以的。SMF.namespace('prop.abc') 是不可以的。
  */
 SMF.namespace = function(prop){
+  if( !prop || typeof prop != "string" ) return;
   var propArray = prop.split('.');
   var len = prop.length;
   var o = SMF;
@@ -38,11 +39,6 @@ SMF.namespace = function(prop){
   }
   return o;
 };
-
-// test case
-// SMF.namespace('app.getTime');
-// SMF.namespace('app.setTime');
-
 
 
 /**
@@ -140,48 +136,63 @@ SMF.core.Modal = function(options){
  *   方法/属性：
  *     -- open(msg, title): title 可选。每次打开都能填入不同的信息。
  *     -- 其他与 modal 同。
+ *  2014-12-10 改成单例模式
  */
-FCM.core.alert = function(options){
-  var defaults = {
-    title:'',
-    msg: '',
-    btnText: '确认',
-    callback: null,
-    klass :''
-  };
+SMF.core.alert = (function(){
 
-  var sets = $.extend(true, {}, defaults, options);
-  var alertBox = new FCM.core.modal({
-    hd:'<h3>'+ sets.title +'</h3>',
-    bd:'<p>'+ sets.msg +'</p>',
-    ft:'<input type="button" value="'+ sets.btnText +'" />',
-    callback: sets.callback,
-    klass: 'M-alertBox '+sets.klass
-  });
+  var alertInstance;
 
-  // 由于alert 在验证的表单的时候，会有很多的提示。
-  // 先 modifyContent , 再 open 的话，会点的非常的重复。
-  // 所以这里就直接覆盖原型中的 open 方法。方便使用。
-  alertBox.open = function(msg){
-    alertBox.all.show();
-    if( msg ){
-      alertBox.panel.find('p').text(msg);
+  return {
+    getSingleInstance:function(options){
+      if( !alertInstance ) alertInstance = this.init(options);
+      return alertInstance;
+    },
+    init: function(options){
+      var defaults = {
+        title:'',
+        msg: '',
+        btnText: '确认',
+        callback: null,
+        klass :''
+      };
+
+      var sets = $.extend(true, {}, defaults, options);
+      var alertBox = new SMF.core.modal({
+        hd:'<h3>'+ sets.title +'</h3>',
+        bd:'<p>'+ sets.msg +'</p>',
+        ft:'<input type="button" value="'+ sets.btnText +'" />',
+        callback: sets.callback,
+        klass: 'M-alertBox '+sets.klass
+      });
+
+      // 由于alert 在验证的表单的时候，会有很多的提示。
+      // 先 setContent , 再 open 的话，会点的非常的重复。
+      // 所以这里就直接覆盖原型中的 open 方法。方便使用。
+      alertBox.open = function(msg){
+        alertBox.overlayer.show();
+        alertBox.panel.show();
+        if( msg ){
+          alertBox.panel.find('p').text(msg);
+        }
+        alertBox.setCenter();
+      };
+
+      alertBox.panel.find('.modal-ft input').bind('click', function(event){
+        alertBox.close();
+      });
+
+      return alertBox;
     }
-    alertBox.setCenter();
   };
 
-  alertBox.panel.find('.modal-ft input').bind('click', function(event){
-    alertBox.close();
-  });
-  return alertBox;
-};
+})();
 
 /**
  * loading：略;
  */
-FCM.core.loading = function(klass){
+SMF.core.loading = function(klass){
   klass = klass || '';
-  var loadingBox = new FCM.core.modal({
+  var loadingBox = new SMF.core.modal({
     bd:'<img src="images/loading.gif" alt="" />',
     klass :'M-loadingBox '+klass
   });
@@ -191,12 +202,12 @@ FCM.core.loading = function(klass){
 
 /**
  * confirm: 
- *   FCM.core.confirm(function(){})
- *   FCM.core.confirm(klass)
- *   FCM.core.confirm(klass, function(){})
+ *   SMF.core.confirm(function(){})
+ *   SMF.core.confirm(klass)
+ *   SMF.core.confirm(klass, function(){})
  * 注：confirm 的回调，是在点击确认之后才执行的。而非打开的时候执行。这和上面的几个弹窗有写不一样。
  */
-FCM.core.confirm = function(){
+SMF.core.confirm = function(){
   // var text = '' ;
   var klass;
   var callback;
@@ -215,7 +226,7 @@ FCM.core.confirm = function(){
     callback = args[1];
   }
 
-  var confirmBox = new FCM.core.modal({
+  var confirmBox = new SMF.core.modal({
     bd:'<h3></h3>',
     klass: 'M-confirmBox '+ klass,
     ft:'<input type="button" class="confirm" value="确定" /><input type="button" class="cancel" value="取消" />'
@@ -238,7 +249,7 @@ FCM.core.confirm = function(){
 /**
  * listPanel : 弹窗方式的列表。
  */
-FCM.core.listPanel = function(options){
+SMF.core.listPanel = function(options){
 
   var defaults = {
     title:'列表',
@@ -249,7 +260,7 @@ FCM.core.listPanel = function(options){
 
   var sets = $.extend(true, defaults, options);
 
-  var listPanel = new FCM.core.modal({
+  var listPanel = new SMF.core.modal({
     hd:'<h3>'+ sets.title +'</h3><span class="icon-close"></span>',
     bd:sets.content,
     klass:'M-listPanel ' + sets.klass,
@@ -260,11 +271,11 @@ FCM.core.listPanel = function(options){
 };
 
 /**
- * FCM.core.customModal : 自定义弹窗
+ * SMF.core.customModal : 自定义弹窗
  * 弹窗的主要内容，写在 html 页面内。
  * 支持弹窗动画，需要 css3 支持
  */
-FCM.core.customModal = function(opts){
+SMF.core.customModal = function(opts){
   var defaults = {
     title:'',
     klass:'',
@@ -272,7 +283,7 @@ FCM.core.customModal = function(opts){
   };
 
   var sets = $.extend(true, {}, defaults, opts);
-  var customModal = new FCM.core.modal({
+  var customModal = new SMF.core.modal({
     hd:sets.title,
     klass: sets.klass
   });
