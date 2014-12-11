@@ -3,16 +3,23 @@ pm.def('emitter', function(){
     this.events = {};
   }
 
+
+  /**
+   * todo: 是否要支持一次绑定多个 handler ? 
+   */
   Emitter.prototype.on = 
   Emitter.prototype.addEventListener = function(type, hanlder){
+    if( typeof type != "string" || typeof hanlder != "function"){ return; }
     if( !this.events[type] ){
       this.events[type] = [];
     }
     this.events[type].push(hanlder);
+    return this
   };
 
   Emitter.prototype.emit = 
   Emitter.prototype.trigger = function(type){
+    if( typeof type != "string" ){ return; }
     var hanlders = this.events[type];
     if( !hanlders ){
       return;
@@ -26,6 +33,7 @@ pm.def('emitter', function(){
 
   Emitter.prototype.off = 
   Emitter.prototype.removeEventListener = function(type, fn){
+    if( typeof type != "string" || typeof fn != "function"){ return; }
     if( !fn ){
       this.events[type] = [];
       return;
@@ -37,6 +45,8 @@ pm.def('emitter', function(){
     }
   };
 
+
+  Emitter.prototype.removeALl = 
   Emitter.prototype.removeAllEventListener = function(){
     this.events = {};
   };

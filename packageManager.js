@@ -14,8 +14,10 @@ var pm = {};
  * 加载器
  * path : {string} , 加载文件的路径
  * cb   ：{function}, 加载之后执行的回调函数
+ * 2014-12-11 增加对参数类型的判断
  */
 pm.load = function(path, cb){
+	if( typeof path != "string" || typeof cb != "string" ){return;}
 	var moduleName = pm.resolve(path);
 
 	if( pm.hasLoaded(moduleName) ){
@@ -25,6 +27,7 @@ pm.load = function(path, cb){
 	var head = document.getElementsByTagName('head')[0];
 	var script = document.createElement('script');
 	script.src = path;
+	// todo: 这里 ie 不兼容，需要修复
 	script.onload = function(){
 		cb(module[moduleName]);
 	};
@@ -33,6 +36,10 @@ pm.load = function(path, cb){
 
 // 定义模块
 pm.def = function(name, fn){
+	if( typeof name != "name" || typeof fn != "function" ){
+		console.error("wrong type of param")
+		return;
+	}
 	var key ;
 	if( pm.hasLoaded(name) ){
 		console.error('the module :"'+ name +'" has exist!');

@@ -113,6 +113,7 @@ SMF.core.Modal = function(options){
   Modal.prototype.setTitle = function(text){
     this.panel.find('.modal-hd h3').html(text || '');
   };
+  // todo: 在插入内容的时候，是否需要自定居中
   Modal.prototype.setContent = function(conetent){
     this.panel.find('.modal-bd').html(conetent || '');
   };
@@ -136,7 +137,7 @@ SMF.core.Modal = function(options){
  *   方法/属性：
  *     -- open(msg, title): title 可选。每次打开都能填入不同的信息。
  *     -- 其他与 modal 同。
- *  2014-12-10 改成单例模式
+ *  2014-12-10 改成可选择获取单例
  */
 SMF.core.alert = (function(){
 
@@ -189,6 +190,7 @@ SMF.core.alert = (function(){
 
 /**
  * loading：略;
+ * todo: 是否删除？ Modal 对象已经提供了 waite 方法
  */
 SMF.core.loading = function(klass){
   klass = klass || '';
@@ -211,7 +213,7 @@ SMF.core.confirm = function(){
   // var text = '' ;
   var klass;
   var callback;
-  // 重载
+  // 模拟重载的功能
   var args = arguments;
   if( args.length === 1){
     switch(typeof args[0]){

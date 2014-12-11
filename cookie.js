@@ -9,7 +9,7 @@ pm.def('cookie', function(){
 	**/
 	
 	// 因为作者偷懒的关系
-	// 目前仅支持 ECMScript 5..
+	// 目前仅支持 ECMAScript 5..
 	var cookie = {};
 
 	cookie.get = function(key){
